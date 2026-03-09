@@ -6,12 +6,16 @@
 #include <chrono>
 #include <thread>
 #include <limits>
+#include <fstream>
 // struct for the projects
 struct Student
 {
     std::string name;
     int ID;
 };
+// save && load file from HDD
+void saveToFile(const std::vector<Student> &students);
+void loadFromFile(std::vector<Student> &students);
 // decoration
 void loading(std::string message);
 // usable fucntion
@@ -31,7 +35,9 @@ int findById(const std::vector<Student> &students, int id);
 int main()
 {
     std::vector<Student> students;
+    loadFromFile(students); 
     srand(time(0)); // use this to get a random number must be in the main function
+
     int choice;
     do
     {
@@ -64,6 +70,7 @@ int main()
             updateStudent(students);
             break;
         case 6:
+        saveToFile(students); 
             std::cout << "Have a nice day!" << std::endl;
             loading("Exiting program");
         }
@@ -254,8 +261,6 @@ int findById(const std::vector<Student> &students, int id)
 void updateStudent(std::vector<Student> &students)
 {
     int id;
-    int index;
-    std::string new_name;
     std::cout << std::setw(10) << std::string(6, '>') << " Update Student " << std::string(6, '<') << std::endl;
     std::cout << "\n";
     if (students.empty())
@@ -265,19 +270,19 @@ void updateStudent(std::vector<Student> &students)
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         return;
     }
+    std::cout << "Enter ID: ";
+    std::cin >> id;
+    int index = findById(students, id);
     if (index != -1)
     {
 
-        std::cout << "Enter ID: ";
-        std::cin >> id;
-        int index = findById(students, id);
         std::string old_name = students[index].name;
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
         loading("Finding student");
-        std::cout << "Student found: " << students[index].name << std::endl;
-        std::cout << "Enter name: ";
+        std::cout << "Student found: " << old_name << std::endl;
+        std::cout << "Enter new name: ";
         getline(std::cin, students[index].name);
         std::cout << old_name << " has been updated to " << students[index].name << std::endl;
     }
@@ -285,4 +290,39 @@ void updateStudent(std::vector<Student> &students)
     {
         std::cout << "Student not found!" << std::endl;
     }
+}
+// declaration for the save && load file
+void saveToFile(const std::vector<Student> &students)
+{
+    
+
+    std::ofstream save_file("student.txt");
+    if (!save_file)
+    {
+        std::cout << "Error cannot find file!" << std::endl;
+        return;
+    }
+    for (size_t i = 0; i < students.size(); i++)
+    {
+        save_file<< students[i].name << "," << students[i].ID << std::endl;
+    }
+    save_file.close();
+}
+void loadFromFile(std::vector<Student> &students)
+{
+    std::ifstream load_file("student.txt");
+    if (!load_file)
+    {
+        return;
+    }
+    std::string search_for_file;
+    while (getline(load_file, search_for_file))
+    {
+        Student s;
+        size_t commaPos = search_for_file.find(',');
+        s.name = search_for_file.substr(0, commaPos);
+        s.ID = std::stoi(search_for_file.substr(commaPos + 1));
+        students.push_back(s);
+    }
+    load_file.close();
 }

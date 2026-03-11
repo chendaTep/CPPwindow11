@@ -12,6 +12,8 @@ struct Student
 {
     std::string name;
     int ID;
+    std::string sex ; 
+    int age ; 
 };
 // save && load file from HDD
 void saveToFile(const std::vector<Student> &students);
@@ -27,15 +29,22 @@ void updateStudent(std::vector<Student> &students);
 void showStudentMenu(std::vector<Student> &students);
 // this is use to show student after the user choose which method to show
 void showStudent(const std::vector<Student> &students);
+// search student && search method
 void searchStudent(std::vector<Student> &students);
+int findById(const std::vector<Student> &students, const int &id);
+int findByName(const std::vector<Student> &student, std::string name);
+void userChooseName(const std::vector<Student> &students);
+void userChooseID(const std::vector<Student> &students);
+// reorder fucntion
+void sortByName(std::vector<Student> &students);
+void sortByID(std::vector<Student> &students);
 // auto fuction
 int generateID(std::vector<Student> &students);
-int findById(const std::vector<Student> &students, int id);
 
 int main()
 {
     std::vector<Student> students;
-    loadFromFile(students); 
+    loadFromFile(students);
     srand(time(0)); // use this to get a random number must be in the main function
 
     int choice;
@@ -70,7 +79,7 @@ int main()
             updateStudent(students);
             break;
         case 6:
-        saveToFile(students); 
+            saveToFile(students);
             std::cout << "Have a nice day!" << std::endl;
             loading("Exiting program");
         }
@@ -83,7 +92,7 @@ int main()
 void loading(std::string message)
 {
     std::string frame[] = {".", "..", "..."};
-    for (int i = 0; i < 9; i++)
+    for (int i = 0; i < 6; i++)
     {
         std::cout << "\r" << message << frame[i % 3] << std::flush;
         std::this_thread::sleep_for(std::chrono::milliseconds(400));
@@ -105,11 +114,19 @@ int generateID(std::vector<Student> &students)
 void addStudent(std::vector<Student> &students)
 {
     Student ask_for;
+    int current_year = 2026 ; 
     std::cout << std::setw(10) << std::string(6, '>') << " Add Student " << std::string(6, '<') << std::endl;
     std::cout << "\n";
     std::cout << "Enter your name: ";
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     getline(std::cin, ask_for.name);
+
+    std::cout<<"Enter your year: "; 
+    std::cin>> ask_for.age ; 
+    std::cout<<"\n"; 
+    std::cout<<"Enter your sex: "; 
+    std::cin >> ask_for.sex ; 
+    std::cout<<"\n"; 
     ask_for.ID = generateID(students);
     students.push_back(ask_for);
     std::cout << '\n';
@@ -191,13 +208,11 @@ void showStudentMenu(std::vector<Student> &students)
             switch (choice)
             {
             case 1:
-                std::sort(students.begin(), students.end(), [](Student a, Student b)
-                          { return a.name < b.name; });
+                sortByName(students);
                 showStudent(students);
                 break;
             case 2:
-                std::sort(students.begin(), students.end(), [](Student a, Student b)
-                          { return a.ID < b.ID; });
+                sortByID(students);
                 showStudent(students);
                 break;
             case 3:
@@ -218,7 +233,7 @@ void showStudent(const std::vector<Student> &students)
     std::cout << "\n";
     for (size_t i = 0; i < students.size(); i++)
     {
-        std::cout << std::left << std::setw(5) << (std::to_string(i + 1) + ".") << std::setw(35) << students[i].name << std::setw(10) << students[i].ID << std::endl;
+        std::cout << std::left << std::setw(5) << (std::to_string(i + 1) + ".") << std::setw(35) << students[i].name << std::setw(10) << students[i].ID << std::setw(10) << students[i].sex << std::endl;
         std::cout << std::endl;
     }
     std::cout << "Total Students: " << students.size() << std::endl;
@@ -229,6 +244,41 @@ void searchStudent(std::vector<Student> &students)
 {
     std::cout << std::setw(10) << std::string(6, '>') << " Search for student " << std::string(6, '<') << std::endl;
     std::cout << "\n";
+    if (students.empty())
+    {
+        std::cout << "Currently! There is no student!!" << std::endl;
+        return;
+    }
+    int choice;
+    do
+    {
+        std::cout << std::setw(10) << std::string(6, '>') << " Search Method " << std::string(6, '<') << std::endl;
+        std::cout << std::setw(6) << " 1.Search By Name\n 2.Search By ID\n 3.Exit!\n";
+        std::cout << std::setw(2) << " ==> Option: ";
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n'); 
+        if (!(std::cin >> choice))
+
+        {
+            std::cout << "Invalid! Choice MUST BE 1 or 2." << std::endl;
+            return;
+        }
+        else
+        {
+            switch (choice)
+            {
+            case 1:
+                userChooseName(students);
+                break;
+            case 2:
+                userChooseID(students);
+                break;
+            case 3:
+                loading("Exiting");
+                std::cout << "Have a nice day!" << std::endl;
+            }
+        }
+
+    } while (choice != 3);
     std::cout << "Enter ID to search: ";
     int id;
 
@@ -247,7 +297,8 @@ void searchStudent(std::vector<Student> &students)
         std::cout << "Student " << id << " not found!" << std::endl;
     }
 }
-int findById(const std::vector<Student> &students, int id)
+// find student method name or ID
+int findById(const std::vector<Student> &students, const int &id)
 {
     for (size_t i = 0; i < students.size(); i++)
     {
@@ -258,6 +309,56 @@ int findById(const std::vector<Student> &students, int id)
     }
     return -1;
 }
+int findByName(const std::vector<Student> &students, std::string name)
+{
+    for (size_t i = 0; i < students.size(); i++)
+    {
+        if (students[i].name == name)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+void userChooseName(const std::vector<Student> &students)
+{
+    Student search;
+    std::string name;
+    std::cout << "Enter Name:";
+    std::cin.ignore(std::numeric_limits<std::streamsize> ::max(),'\n'); 
+    getline(std::cin, name);
+    int index = findByName(students, name);
+    if (index != -1)
+    {
+        loading("Finding student");
+        std::cout << "Student found!" << std::endl;
+        std::cout << "Student name:" << name << " ID: " << search.ID << std::endl;
+    }
+    else
+    {
+        std::cout << "Student found: " << name << std::endl;
+    }
+}
+void userChooseID(const std::vector<Student> &students)
+{
+    Student search;
+    int id;
+    std::cout << "Enter ID:";
+    std::cin >> id;
+    int index = findById(students, id);
+    if (index != -1)
+    {
+
+        loading("Finding student");
+        std::cout << "Student found!" << std::endl;
+        std::cout << "Student ID: " << id << " Name: " << search.name << std::endl;
+    }
+    else
+    {
+        std::cout << "Student ID:" << id << " not found!" << std::endl;
+    }
+}
+// update student
 void updateStudent(std::vector<Student> &students)
 {
     int id;
@@ -291,10 +392,21 @@ void updateStudent(std::vector<Student> &students)
         std::cout << "Student not found!" << std::endl;
     }
 }
+// declaration sort name or id
+void sortByName(std::vector<Student> &students)
+{
+    std::sort(students.begin(), students.end(), [](Student a, Student b)
+              { return a.name < b.name; });
+}
+void sortByID(std::vector<Student> &students)
+{
+    std::sort(students.begin(), students.end(), [](Student a, Student b)
+              { return a.ID < b.ID; });
+}
 // declaration for the save && load file
+// save to file for all name && data
 void saveToFile(const std::vector<Student> &students)
 {
-    
 
     std::ofstream save_file("student.txt");
     if (!save_file)
@@ -304,10 +416,11 @@ void saveToFile(const std::vector<Student> &students)
     }
     for (size_t i = 0; i < students.size(); i++)
     {
-        save_file<< students[i].name << "," << students[i].ID << std::endl;
+        save_file << students[i].name << "," << students[i].ID << std::endl;
     }
     save_file.close();
 }
+// load from file all name && data
 void loadFromFile(std::vector<Student> &students)
 {
     std::ifstream load_file("student.txt");
